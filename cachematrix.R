@@ -20,20 +20,21 @@ makeCacheMatrix <- function(x = matrix()) {
 ## Creates a global key/value map cache where the key is the hash value of the
 ## matrix and the value is the inverse of that matrix. The intention is to
 ## calculate the inverse of an unique matrix one time, as long as the 
-## 'inversemap' object persists.
+## 'inversemap' object persists. Multiple inverses can be cached this way.
 cacheSolve <- function(x, ...) {
     if (!exists("inversemap")) {
         inversemap <<- list(matrix())
     }
     
-    inverse <- x$getinverse()
-    if (is.null(inverse)) {
-        key <- digest(x$get())
-        if (is.null(inversemap[[key]])) {
-            print("Updating cache...")
-            inversemap[[key]] <<- solve(x$get())
-        }
-        x$setinverse(inversemap[[key]])
-    }    
+    key <- digest(x$get())
+    inverse <- inversemap[[key]]
+
+    if (!is.null(inverse)) {
+        message("Getting cached inverse")
+        return(inverse)
+    }
+    message("Updating cache")
+    inversemap[[key]] <<- solve(x$get())
+    x$setinverse(inversemap[[key]])   
     x$getinverse()
 }
